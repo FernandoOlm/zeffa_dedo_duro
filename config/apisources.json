@@ -1,0 +1,36 @@
+{
+  "transparencia": {
+    "base": "https://api.portaldatransparencia.gov.br/api-de-dados",
+    "key": "COLOQUE_SUA_CHAVE_AQUI",
+    "endpoints": {
+      "servidores": "/servidores",
+      "viagens": "/viagens",
+      "diarias": "/diarias",
+      "despesas_orgao": "/despesas-orgao",
+      "cartoes": "/cartoes",
+      "auditorias": "/auditorias"
+    },
+    "orgaos": {
+      "presidencia": "00001",
+      "stf": "00011",
+      "stj": "00013",
+      "tcu": "00022"
+    }
+  },
+  "camara": {
+    "base": "https://dadosabertos.camara.leg.br/api/v2",
+    "endpoints": {
+      "deputados": "/deputados",
+      "despesas": "/deputados/{id}/despesas",
+      "info": "/deputados/{id}",
+      "emendas": "/proposicoes?autor={id}&itens=200"
+    }
+  },
+  "senado": {
+    "base": "https://legis.senado.leg.br/dadosabertos",
+    "endpoints": {
+      "info": "/senador/{id}",
+      "despesas": "/senador/{id}/despesas"
+    }
+  }
+}
