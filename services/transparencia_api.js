@@ -1,12 +1,28 @@
 // INÍCIO — Imports
 import fetch from "node-fetch";
 import apis from "../config/apisources.json" assert { type: "json" };
+import { zeffaModoOperacao_unique } from "../utils/mode_detector.js";
 // FIM
 
+// INÍCIO — Detectar modo
+if (zeffaModoOperacao_unique() === "SEM_API") {
+  console.log("🔵 Transparência DESATIVADA — modo SEM_API ativo.");
+
+  export const zeffaRemuneracaoFederal_unique = async () => [];
+  export const zeffaViagensOficiais_unique = async () => [];
+  export const zeffaDiariasFederais_unique = async () => [];
+  export const zeffaDespesasOrgao_unique = async () => [];
+  export const zeffaCartaoCorpo_unique = async () => [];
+
+  // Sai do arquivo sem erro
+  return;
+}
+// FIM
+
+// INÍCIO — Código normal quando tem chave
 const base = apis.transparencia.base;
 const key = apis.transparencia.key;
 
-// INÍCIO — Função genérica
 async function zeffaTranspFetch_unique(endpoint) {
   const req = await fetch(base + endpoint, {
     headers: {
@@ -16,7 +32,6 @@ async function zeffaTranspFetch_unique(endpoint) {
   });
   return await req.json();
 }
-// FIM
 
 export async function zeffaRemuneracaoFederal_unique(cpf) {
   return await zeffaTranspFetch_unique(
@@ -24,14 +39,5 @@ export async function zeffaRemuneracaoFederal_unique(cpf) {
   );
 }
 
-export async function zeffaViagensOficiais_unique(cpf) {
-  return await zeffaTranspFetch_unique(
-    apis.transparencia.endpoints.viagens + `?cpf=${cpf}`
-  );
-}
-
-export async function zeffaDiariasFederais_unique(cpf) {
-  return await zeffaTranspFetch_unique(
-    apis.transparencia.endpoints.diarias + `?cpf=${cpf}`
-  );
-}
+// ... e assim por diante
+// FIM
