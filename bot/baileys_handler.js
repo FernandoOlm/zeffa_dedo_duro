@@ -1,49 +1,94 @@
 // INÍCIO — Imports
-import { zeffaBuscarPolitico_unique } from "../utils/buscar_politico.js";
-import { zeffaBuscarCapivara_unique } from "../services/zeffa_resumidor.js";
-import { zeffaLogEntrada_unique, zeffaLogSaida_unique } from "../utils/logger.js";
+const chalk = require("chalk");
 // FIM
 
-// INÍCIO — Handler Zeffa
-export async function zeffaCommandHandler_unique(sock, msg) {
+// INÍCIO — Função para enviar mensagens SEM FALHAR
+async function responderUnique(sock, jid, texto) {
   try {
-    const jid = msg.key.remoteJid;
+    await sock.sendMessage(
+      jid,
+      { text: texto },
+      { statusJidList: [] } // ← impede erro “phash”, garante entrega real
+    );
+    console.log("📤 Enviado →", texto);
+  } catch (e) {
+    console.log("🔥 ERRO ao enviar:", e);
+  }
+}
+// FIM
+
+// INÍCIO — Handler principal
+module.exports.zeffaCommandHandler_unique = async (sock, msg) => {
+  try {
+    const from = msg.key.remoteJid;
     const texto =
-      msg.message.conversation ||
-      msg.message.extendedTextMessage?.text ||
+      msg.message?.conversation ||
+      msg.message?.extendedTextMessage?.text ||
       "";
 
     if (!texto) return;
 
-    zeffaLogEntrada_unique("Mensagem WhatsApp", { jid, textoCompleto: texto });
+    const comando = texto.trim().toLowerCase();
 
-    if (texto.startsWith("!zeffa")) {
-      const nome = texto.replace("!zeffa", "").trim();
+    console.log("📥 Recebido:", comando);
 
-      if (!nome) {
-        zeffaLogSaida_unique("Erro: Nome não informado");
-        return sock.sendMessage(jid, { text: "Manda o nome aí 😘" });
-      }
+    // ===============================
+    // 🔥 COMANDOS DE TESTE (OBRIGATÓRIO)
+    // ===============================
 
-      zeffaLogEntrada_unique("Buscar político", { nome });
+    if (comando === "!ping") {
+      await responderUnique(sock, from, "pong 🏓");
+      return;
+    }
 
-      const politico = await zeffaBuscarPolitico_unique(nome);
-      if (!politico) {
-        zeffaLogSaida_unique("Pesquisa falhou");
-        return sock.sendMessage(jid, { text: "Não achei esse cidadão 🤣" });
-      }
+    if (comando === "!status") {
+      await responderUnique(sock, from, "🔥 Zeffa Online e operante!");
+      return;
+    }
 
-      zeffaLogSaida_unique(`Politico identificado (${politico.tipo})`);
+    if (comando === "!hora") {
+      const hora = new Date().toLocaleString("pt-BR");
+      await responderUnique(sock, from, "⏰ " + hora);
+      return;
+    }
 
-      const capivara = await zeffaBuscarCapivara_unique(politico);
+    // ===============================
+    // 🔥 COMANDO PRINCIPAL: !zeffa <nome>
+    // ===============================
 
-      zeffaLogSaida_unique("Resumo enviado");
+    if (comando.startsWith("!zeffa ")) {
+      const nome = comando.replace("!zeffa ", "").trim();
 
-      return sock.sendMessage(jid, { text: capivara.resposta });
+      await responderUnique(
+        sock,
+        from,
+        "🔍 *Zeffa analisando*: " + nome + "\nAguarde..."
+      );
+
+      // Aqui entra seu motor de busca real:
+      // buscarPoliticoUnique(nome)
+      // coletarDadosUnique()
+      // resumo final
+
+      // TESTE temporário (enquanto ajustamos tudo)
+      await responderUnique(
+        sock,
+        from,
+        `🕵️ *Zeffa Dedo Duro ONLINE*\n\nCapivara de *${nome.toUpperCase()}* (modo teste)\n\n💰 Gastos: R$ 4.320,70\n📄 Nota mais cara: R$ 346,70\n\nZeffa trouxe o resumão 😘`
+      );
+
+      return;
+    }
+
+    // ===============================
+    // 🔥 DEFAULT
+    // ===============================
+
+    if (comando.startsWith("!")) {
+      await responderUnique(sock, from, "❓ Comando não reconhecido.");
     }
   } catch (err) {
-    zeffaLogSaida_unique("Erro geral");
-    console.error("🔥 ERRO NO ZEFFA:", err);
+    console.log("⚠️ Erro no handler:", err);
   }
-}
+};
 // FIM
