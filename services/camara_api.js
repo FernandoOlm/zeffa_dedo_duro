@@ -1,6 +1,6 @@
 // INÍCIO — Imports
 import fetch from "node-fetch";
-import apis from "../config/apisources.json" assert { type: "json" };
+import apis from "../config/apisources.json" with { type: "json" };
 import { zeffaLogEntrada_unique, zeffaLogSaida_unique } from "../utils/logger.js";
 // FIM
 
