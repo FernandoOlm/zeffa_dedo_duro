@@ -1,11 +1,13 @@
-// INÍCIO — Imports
-import makeWASocket, {
+// INÍCIO — Imports universais compatíveis com ESM
+import * as baileys from "@whiskeysockets/baileys";
+const {
+  default: makeWASocket,
   DisconnectReason,
   useMultiFileAuthState
-} from "@whiskeysockets/baileys";
+} = baileys;
+
 import { Boom } from "@hapi/boom";
 import chalk from "chalk";
-
 import { zeffaCommandHandler_unique } from "./bot/baileys_handler.js";
 // FIM
 
@@ -17,7 +19,7 @@ async function iniciarZeffa_unique() {
 
   const sock = makeWASocket({
     auth: state,
-    printQRInTerminal: true, // QR padrão igual ao Ferdinando
+    printQRInTerminal: true,
   });
 
   // INÍCIO — Evento de conexão
@@ -33,7 +35,7 @@ async function iniciarZeffa_unique() {
         console.log(chalk.yellow("🔄 Reconectando Zeffa..."));
         iniciarZeffa_unique();
       } else {
-        console.log(chalk.red("⛔ Sessão expirada. Apague a pasta /auth e logue de novo."));
+        console.log(chalk.red("⛔ Sessão expirada. Apague a pasta /auth e logue novamente."));
       }
     }
 
