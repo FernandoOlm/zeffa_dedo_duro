@@ -1,42 +1,45 @@
 // INÍCIO — Imports
-import makeWASocket, { useMultiFileAuthState, DisconnectReason } from "@whiskeysockets/baileys";
+import makeWASocket, {
+  DisconnectReason,
+  useMultiFileAuthState
+} from "@whiskeysockets/baileys";
 import { Boom } from "@hapi/boom";
+import chalk from "chalk";
+
 import { zeffaCommandHandler_unique } from "./bot/baileys_handler.js";
 // FIM
 
 // INÍCIO — Função principal
-async function startZeffaBot_unique() {
-  const { state, saveCreds } = await useMultiFileAuthState("auth");
+async function iniciarZeffa_unique() {
+  console.log(chalk.blueBright("🚀 Iniciando Zeffa Dedo Duro..."));
+
+  const { state, saveCreds } = await useMultiFileAuthState("./auth");
 
   const sock = makeWASocket({
     auth: state,
-    printQRInTerminal: false // DESATIVADO, mas vamos tratar manualmente
+    printQRInTerminal: true, // QR padrão igual ao Ferdinando
   });
 
-  // INÍCIO — Listener do QR
+  // INÍCIO — Evento de conexão
   sock.ev.on("connection.update", (update) => {
-    const { connection, lastDisconnect, qr } = update;
-
-    if (qr) {
-      console.log("\n======================================");
-      console.log("        🔥 QR CODE DO ZEFFA 🔥        ");
-      console.log("======================================\n");
-      console.log(qr); // <- QR literal (para bot de CLI)
-      console.log("\nEscaneie esse QR no seu WhatsApp!");
-      console.log("======================================\n");
-    }
+    const { connection, lastDisconnect } = update;
 
     if (connection === "close") {
-      const shouldReconnect =
-        lastDisconnect?.error?.output?.statusCode !== DisconnectReason.loggedOut;
+      const motivo = new Boom(lastDisconnect.error)?.output?.statusCode;
 
-      console.log("📡 Conexão fechada:", lastDisconnect?.error, "Reconectar?", shouldReconnect);
+      console.log(chalk.red("❌ Conexão fechada. Motivo: " + motivo));
 
-      if (shouldReconnect) {
-        startZeffaBot_unique();
+      // Se NÃO foi logout, reconecta
+      if (motivo !== DisconnectReason.loggedOut) {
+        console.log(chalk.yellow("🔄 Reconectando Zeffa..."));
+        iniciarZeffa_unique();
+      } else {
+        console.log(chalk.red("⛔ Sessão expirada. Apague a pasta /auth e logue novamente."));
       }
-    } else if (connection === "open") {
-      console.log("🔥 Zeffa conectado com sucesso!");
+    }
+
+    if (connection === "open") {
+      console.log(chalk.green("🔥 Zeffa conectado com sucesso!"));
     }
   });
   // FIM
@@ -47,12 +50,18 @@ async function startZeffaBot_unique() {
 
   // INÍCIO — Receber mensagens
   sock.ev.on("messages.upsert", async ({ messages }) => {
-    const msg = messages[0];
+    const msg = messages?.[0];
     if (!msg?.message) return;
-    await zeffaCommandHandler_unique(sock, msg);
+
+    try {
+      await zeffaCommandHandler_unique(sock, msg);
+    } catch (err) {
+      console.log(chalk.red("⚠️ Erro ao processar mensagem:"), err);
+    }
   });
   // FIM
 }
 
-startZeffaBot_unique();
+// INÍCIO — Start
+iniciarZeffa_unique();
 // FIM
