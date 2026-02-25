@@ -27,14 +27,13 @@ async function iniciarZeffa_unique() {
     if (connection === "close") {
       const motivo = new Boom(lastDisconnect.error)?.output?.statusCode;
 
-      console.log(chalk.red("❌ Conexão fechada. Motivo: " + motivo));
+      console.log(chalk.red(`❌ Conexão fechada. Motivo: ${motivo}`));
 
-      // Se NÃO foi logout, reconecta
       if (motivo !== DisconnectReason.loggedOut) {
         console.log(chalk.yellow("🔄 Reconectando Zeffa..."));
         iniciarZeffa_unique();
       } else {
-        console.log(chalk.red("⛔ Sessão expirada. Apague a pasta /auth e logue novamente."));
+        console.log(chalk.red("⛔ Sessão expirada. Apague a pasta /auth e logue de novo."));
       }
     }
 
