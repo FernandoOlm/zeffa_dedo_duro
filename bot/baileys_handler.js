@@ -2,17 +2,17 @@
 const chalk = require("chalk");
 // FIM
 
-// INÍCIO — Função para enviar mensagens SEM FALHAR
+// INÍCIO — Função de resposta segura
 async function responderUnique(sock, jid, texto) {
   try {
     await sock.sendMessage(
       jid,
       { text: texto },
-      { statusJidList: [] } // ← impede erro “phash”, garante entrega real
+      { statusJidList: [] } // ← impede erro “phash” e evita reenvio
     );
-    console.log("📤 Enviado →", texto);
+    console.log("📤 Enviado →", texto.replace(/\n/g, " "));
   } catch (e) {
-    console.log("🔥 ERRO ao enviar:", e);
+    console.log("🔥 ERRO AO ENVIAR:", e);
   }
 }
 // FIM
@@ -20,10 +20,16 @@ async function responderUnique(sock, jid, texto) {
 // INÍCIO — Handler principal
 module.exports.zeffaCommandHandler_unique = async (sock, msg) => {
   try {
+    // ❗ IGNORA MENSAGENS DO PRÓPRIO BOT (o bug principal!)
+    if (msg?.key?.fromMe) return;
+
     const from = msg.key.remoteJid;
+
     const texto =
       msg.message?.conversation ||
       msg.message?.extendedTextMessage?.text ||
+      msg.message?.imageMessage?.caption ||
+      msg.message?.videoMessage?.caption ||
       "";
 
     if (!texto) return;
@@ -33,7 +39,7 @@ module.exports.zeffaCommandHandler_unique = async (sock, msg) => {
     console.log("📥 Recebido:", comando);
 
     // ===============================
-    // 🔥 COMANDOS DE TESTE (OBRIGATÓRIO)
+    // 🔥 COMANDOS DE TESTE
     // ===============================
 
     if (comando === "!ping") {
@@ -42,7 +48,7 @@ module.exports.zeffaCommandHandler_unique = async (sock, msg) => {
     }
 
     if (comando === "!status") {
-      await responderUnique(sock, from, "🔥 Zeffa Online e operante!");
+      await responderUnique(sock, from, "🔥 Zeffa Online, pai 😘");
       return;
     }
 
@@ -62,15 +68,10 @@ module.exports.zeffaCommandHandler_unique = async (sock, msg) => {
       await responderUnique(
         sock,
         from,
-        "🔍 *Zeffa analisando*: " + nome + "\nAguarde..."
+        `🔍 *Zeffa analisando*: ${nome}\nAguarde...`
       );
 
-      // Aqui entra seu motor de busca real:
-      // buscarPoliticoUnique(nome)
-      // coletarDadosUnique()
-      // resumo final
-
-      // TESTE temporário (enquanto ajustamos tudo)
+      // Enquanto não conectamos tudo, devolve teste:
       await responderUnique(
         sock,
         from,
@@ -85,7 +86,7 @@ module.exports.zeffaCommandHandler_unique = async (sock, msg) => {
     // ===============================
 
     if (comando.startsWith("!")) {
-      await responderUnique(sock, from, "❓ Comando não reconhecido.");
+      await responderUnique(sock, from, "❓ Comando não reconhecido, chefe.");
     }
   } catch (err) {
     console.log("⚠️ Erro no handler:", err);
