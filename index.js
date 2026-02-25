@@ -1,14 +1,11 @@
-// INÍCIO — Imports universais compatíveis com ESM
-import * as baileys from "@whiskeysockets/baileys";
-const {
-  default: makeWASocket,
-  DisconnectReason,
-  useMultiFileAuthState
-} = baileys;
+// INÍCIO — Imports (CommonJS)
+const baileys = require("@whiskeysockets/baileys");
+const makeWASocket = baileys.default;
+const { useMultiFileAuthState, DisconnectReason } = baileys;
 
-import { Boom } from "@hapi/boom";
-import chalk from "chalk";
-import { zeffaCommandHandler_unique } from "./bot/baileys_handler.js";
+const { Boom } = require("@hapi/boom");
+const chalk = require("chalk");
+const { zeffaCommandHandler_unique } = require("./bot/baileys_handler.js");
 // FIM
 
 // INÍCIO — Função principal
@@ -22,20 +19,18 @@ async function iniciarZeffa_unique() {
     printQRInTerminal: true,
   });
 
-  // INÍCIO — Evento de conexão
   sock.ev.on("connection.update", (update) => {
     const { connection, lastDisconnect } = update;
 
     if (connection === "close") {
       const motivo = new Boom(lastDisconnect.error)?.output?.statusCode;
-
       console.log(chalk.red(`❌ Conexão fechada. Motivo: ${motivo}`));
 
       if (motivo !== DisconnectReason.loggedOut) {
         console.log(chalk.yellow("🔄 Reconectando Zeffa..."));
         iniciarZeffa_unique();
       } else {
-        console.log(chalk.red("⛔ Sessão expirada. Apague a pasta /auth e logue novamente."));
+        console.log(chalk.red("⛔ Sessão expirada. Delete a pasta /auth e logue de novo."));
       }
     }
 
@@ -43,13 +38,9 @@ async function iniciarZeffa_unique() {
       console.log(chalk.green("🔥 Zeffa conectado com sucesso!"));
     }
   });
-  // FIM
 
-  // INÍCIO — Atualizar credenciais
   sock.ev.on("creds.update", saveCreds);
-  // FIM
 
-  // INÍCIO — Receber mensagens
   sock.ev.on("messages.upsert", async ({ messages }) => {
     const msg = messages?.[0];
     if (!msg?.message) return;
@@ -60,9 +51,6 @@ async function iniciarZeffa_unique() {
       console.log(chalk.red("⚠️ Erro ao processar mensagem:"), err);
     }
   });
-  // FIM
 }
 
-// INÍCIO — Start
 iniciarZeffa_unique();
-// FIM
