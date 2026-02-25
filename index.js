@@ -6,6 +6,7 @@ const { useMultiFileAuthState, DisconnectReason } = baileys;
 const { Boom } = require("@hapi/boom");
 const chalk = require("chalk");
 const { zeffaCommandHandler_unique } = require("./bot/baileys_handler.js");
+const qrcode = require("qrcode-terminal");
 // FIM
 
 // INÍCIO — Função principal
